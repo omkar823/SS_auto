@@ -1,0 +1,7 @@
+# Ignore runtime files
+logs/
+backups/
+
+# OS files
+*.swp
+*.log
