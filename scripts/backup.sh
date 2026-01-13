@@ -1,26 +1,69 @@
 #!/bin/bash
+set -e
+
+# ===============================
+# CONFIG
+# ===============================
+BASE_DIR="/home/devops/projects/SS_auto/backups"
+PROJECT_DIR="/home/devops/projects/SS_auto"
+
+MYSQL_USER="root"
+MYSQL_PASSWORD="YOUR_MYSQL_PASSWORD"
+
+REDIS_DUMP="/var/lib/redis/dump.rdb"
 
 DATE=$(date +%F)
-BACKUP_DIR="../backups/$DATE"
-MYSQL_USER="root"
-MYSQL_PASS="password"
-PG_USER="postgres"
+TIME=$(date +%H-%M-%S)
+BACKUP_DIR="$BASE_DIR/$DATE/$TIME"
 
-mkdir -p $BACKUP_DIR
+# ===============================
+# CREATE DIRECTORY
+# ===============================
+mkdir -p "$BACKUP_DIR"
 
-echo "Backup started at $(date)"
+echo "Backup started at $BACKUP_DIR"
 
-# Code backup
-tar -czf $BACKUP_DIR/code_backup.tar.gz ../
+# ===============================
+# CODE BACKUP
+# ===============================
+tar -czf "$BACKUP_DIR/code.tar.gz" \
+  --exclude=backups \
+  --exclude=.git \
+  --exclude=logs \
+  "$PROJECT_DIR"
 
-# MySQL
-mysqldump -u $MYSQL_USER -p$MYSQL_PASS --all-databases > $BACKUP_DIR/mysql.sql
+echo "Code backup done"
 
-# PostgreSQL
-sudo -u $PG_USER pg_dumpall > $BACKUP_DIR/postgres.sql
+# ===============================
+# MYSQL BACKUP
+# ===============================
+mysqldump -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" \
+  --all-databases \
+  --single-transaction \
+  --routines \
+  --events \
+  > "$BACKUP_DIR/mysql.sql"
 
-# Redis
+echo "MySQL backup done"
+
+# ===============================
+# POSTGRES BACKUP
+# ===============================
+sudo -u postgres pg_dumpall > "$BACKUP_DIR/postgres.sql"
+
+echo "Postgres backup done"
+
+# ===============================
+# REDIS BACKUP
+# ===============================
 redis-cli SAVE
-cp /var/lib/redis/dump.rdb $BACKUP_DIR/redis.rdb
+cp "$REDIS_DUMP" "$BACKUP_DIR/redis.rdb"
 
-echo "Backup completed at $(date)"
+echo "Redis backup done"
+
+# ===============================
+# PERMISSIONS
+# ===============================
+chown -R devops:devops "$BACKUP_DIR"
+
+echo "Backup completed successfully"

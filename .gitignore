@@ -1,3 +1,5 @@
 logs/
 backups/
 *.log
+backups/*
+!backups/2026-01-13/
