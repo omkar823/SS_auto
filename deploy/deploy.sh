@@ -1,11 +1,15 @@
 #!/bin/bash
 
 APP_DIR="$HOME/projects/SS_auto"
-LOGFILE="../logs/deploy.log"
+LOG_DIR="$APP_DIR/logs"
+LOGFILE="$LOG_DIR/deploy.log"
 
-echo "Deployment started at $(date)" >> $LOGFILE
+# Create logs directory if missing
+mkdir -p "$LOG_DIR"
 
-cd $APP_DIR || exit 1
-git pull origin main >> $LOGFILE 2>&1
+echo "Deployment started at $(date)" >> "$LOGFILE"
 
-echo "Deployment completed at $(date)" >> $LOGFILE
+cd "$APP_DIR" || exit 1
+git pull origin main >> "$LOGFILE" 2>&1
+
+echo "Deployment completed at $(date)" >> "$LOGFILE"

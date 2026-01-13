@@ -6,6 +6,8 @@ set -e
 # ===============================
 BASE_DIR="/home/devops/projects/SS_auto/backups"
 PROJECT_DIR="/home/devops/projects/SS_auto"
+SCRIPT_DIR="/home/devops/projects/SS_auto/scripts"
+MONITOR_DIR="/home/devops/projects/SS_auto/monitoring"
 
 MYSQL_USER="root"
 MYSQL_PASSWORD="YOUR_MYSQL_PASSWORD"
@@ -20,7 +22,6 @@ BACKUP_DIR="$BASE_DIR/$DATE/$TIME"
 # CREATE DIRECTORY
 # ===============================
 mkdir -p "$BACKUP_DIR"
-
 echo "Backup started at $BACKUP_DIR"
 
 # ===============================
@@ -50,7 +51,6 @@ echo "MySQL backup done"
 # POSTGRES BACKUP
 # ===============================
 sudo -u postgres pg_dumpall > "$BACKUP_DIR/postgres.sql"
-
 echo "Postgres backup done"
 
 # ===============================
@@ -58,12 +58,23 @@ echo "Postgres backup done"
 # ===============================
 redis-cli SAVE
 cp "$REDIS_DUMP" "$BACKUP_DIR/redis.rdb"
-
 echo "Redis backup done"
+
+# ===============================
+# MONITORING & ALERT SCRIPTS BACKUP
+# ===============================
+cp "$MONITOR_DIR/monitor.sh"        "$BACKUP_DIR/"
+cp "$MONITOR_DIR/monitoring.py"     "$BACKUP_DIR/"
+cp "$MONITOR_DIR/alert_mail.sh"     "$BACKUP_DIR/"
+cp "/home/devops/projects/SS_auto/health_check.sh" "$BACKUP_DIR/"
+cp "/home/devops/projects/SS_auto/system_health.sh" "$BACKUP_DIR/"
+
+echo "Monitoring & alert scripts backed up"
 
 # ===============================
 # PERMISSIONS
 # ===============================
 chown -R devops:devops "$BACKUP_DIR"
 
-echo "Backup completed successfully"
+echo "Backup completed successfully "
+
